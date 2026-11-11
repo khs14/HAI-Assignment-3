@@ -30,13 +30,13 @@ Open a **Bash console** (Consoles tab → Bash):
 
 ```bash
 cd ~
-git clone https://github.com/<your-github-user>/hai-relevance-study.git
+git clone https://github.com/khs14/HAI-Assignment-3.git hai-relevance-study
 cd hai-relevance-study
 ```
 
-If the GitHub repo is private, clone with a GitHub personal access token as the
-password when prompted (GitHub → Settings → Developer settings → Tokens, with
-read access to this repo only).
+The last word of the `git clone` line names the folder. Keep it as
+`hai-relevance-study`, because every path in this guide (and in the WSGI file)
+uses that name.
 
 ## 2. Create the virtualenv with the pinned versions
 

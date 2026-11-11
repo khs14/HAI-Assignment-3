@@ -13,7 +13,7 @@
       <tr><td>{{ label }}</td><td>{% for s, n in (status.get(cond) or {}).items() %}<strong>{{ s }}</strong> {{ n }}{% if not loop.last %} · {% endif %}{% else %}none yet{% endfor %}</td></tr>
       {% endfor %}
     </table></div>
-    <p>People who completed <strong>both</strong> versions: <strong>{{ both }}</strong> (the course needs at least 5 per version)</p>
+    <p>People who completed <strong>both</strong> versions: <strong>{{ both }}</strong></p>
     <h2>Session duration (consent → finish, completed sessions)</h2>
     <div class="table-wrap"><table>
       <tr><th>Version</th><th>Sessions</th><th>Median</th><th>90th pct</th><th>Longest</th><th>Over {{ limit }} min</th></tr>
