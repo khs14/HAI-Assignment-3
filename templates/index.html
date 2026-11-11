@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Headline Relevance Study ({{ condition_text }})</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body data-condition="{{ condition }}">
+<header class="topbar">
+  <span class="topbar-title"><span class="hide-xs">Headline </span>Relevance Study</span>
+  <span class="version-badge version-{{ condition }}"><span class="hide-xs">Version: </span><strong>{{ condition_text }}</strong></span>
+</header>
+
+<main id="app" aria-live="polite">
+  <p class="muted center" id="loading">Loading…</p>
+
+  <!-- ============================== Consent ============================== -->
+  <section id="screen-consent" class="screen" hidden>
+    <h1>Is this headline about environmental sustainability?</h1>
+    {% if condition == 'ai' %}
+    <p class="lead">You'll read short news headlines and decide whether each one is about the environment. <strong>In this version you can ask an AI for a suggestion on each headline.</strong></p>
+    {% else %}
+    <p class="lead">You'll read short news headlines and decide whether each one is about the environment, <strong>on your own (no AI in this version)</strong>.</p>
+    {% endif %}
+
+    <div class="box">
+      <h2>What to expect</h2>
+      <ul>
+        <li>About <strong>{{ '7' if condition == 'ai' else '5' }} minutes</strong>, {{ n_trials }} headlines.</li>
+        <li>English news headlines from the US and India editions of Google News.</li>
+        <li>There are two short <strong>attention checks</strong>. If you miss one, you get one more try. Missing it again ends the study, and this version can't be retaken.</li>
+        <li>We record a random ID, your answers, confidence and response times{% if condition == 'ai' %}, and how you use the AI suggestions{% endif %}.</li>
+      </ul>
+    </div>
+
+    <div class="box voluntary">
+      <h2>Taking part is voluntary</h2>
+      <ul>
+        <li>This is a <strong>volunteer</strong> study for CSE 594 (Human-AI Interaction) coursework. There is no payment and no penalty for not taking part.</li>
+        <li>You can stop at any time by closing the page. Answers you already submitted stay saved unless you delete them.</li>
+        <li>We don't collect your name, email or any other personal details. Your uniqname is only used as described below.</li>
+        <li>After you finish you can review your answers, see the results board, or delete your submission.</li>
+      </ul>
+    </div>
+
+    <form id="consent-form" class="box" novalidate>
+      <h2>Your uniqname</h2>
+      <p class="small muted">Used only so each person does this version once, to link it with your other version, and so you can resume if you close the page.</p>
+      <label for="uniqname">Uniqname</label>
+      <input id="uniqname" name="uniqname" autocomplete="off" autocapitalize="none" spellcheck="false"
+             maxlength="8" placeholder="e.g. jsmith" required>
+      <label class="check">
+        <input type="checkbox" id="anonymous" checked>
+        <span><strong>Keep me anonymous.</strong> My uniqname is not saved. Only a scrambled code that can't be turned back into it is kept, to stop repeat sign-ups.</span>
+      </label>
+      <p class="small" id="anon-note-off" hidden>Your uniqname will be stored with your answers.</p>
+
+      <h2 class="consent-heading">Consent</h2>
+      <label class="check consent-check">
+        <input type="checkbox" id="consent-check">
+        <span>I have read the information above. I understand that taking part is <strong>voluntary</strong>, that I can stop at any time, and <strong>I agree to take part</strong> in this study.</span>
+      </label>
+      <p class="error" id="consent-error" role="alert" hidden></p>
+      <div class="btn-row">
+        <button type="submit" class="btn primary" id="consent-submit" disabled>I agree, continue</button>
+        <button type="button" class="btn" id="consent-decline">I don't want to take part</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- ============================== Tutorial ============================== -->
+  <section id="screen-tutorial" class="screen" hidden>
+    <h1>How to decide</h1>
+    <p class="note"><strong>Why this matters:</strong> we're studying how AI suggestions affect people's judgments, so please answer honestly. There is no penalty for mistakes.</p>
+    <div class="definitions-slot"></div>
+
+    <h2>Examples</h2>
+    <ul class="examples">
+      {% for ex in tutorial %}
+      <li>
+        <span class="tag {{ 'tag-rel' if ex.label == 1 else 'tag-not' }}">{{ 'Relevant' if ex.label == 1 else 'Not relevant' }}</span>
+        <span class="ex-title">“{{ ex.title }}”</span>
+        <span class="small muted">{{ ex.kind }}: {{ ex.why }}</span>
+      </li>
+      {% endfor %}
+    </ul>
+
+    {% if condition == 'ai' %}
+    <div class="box">
+      <h2>About the AI</h2>
+      <ul>
+        <li>For each headline you can click <strong>Show AI suggestion</strong> (or press <kbd>A</kbd>). It's optional: use it whenever you like.</li>
+        <li>The AI then suggests <span class="tag tag-rel">Relevant</span> or <span class="tag tag-not">Not relevant</span> and how confident it is: <span class="meter-inline">▮▮▮</span> High, <span class="meter-inline">▮▮▯</span> Medium, <span class="meter-inline">▮▯▯</span> Low.</li>
+        <li>Click <strong>Why?</strong> to highlight the words it relied on.</li>
+        <li>The AI can be wrong. The decision is yours.</li>
+      </ul>
+    </div>
+    {% endif %}
+    <div class="box">
+      <h2>How it works</h2>
+      <ul>
+        <li>Pick <strong>Relevant</strong> or <strong>Not relevant</strong>, then how sure you are (1–5), then <strong>Next</strong>.</li>
+        <li>After each headline you'll see the correct answer.</li>
+        <li>There's <strong>no Back button</strong>: once you click Next, the answer is final.</li>
+        <li>Watch for <strong>attention checks</strong>: you get one retry; a second miss ends the study.</li>
+        <li>Keyboard: <kbd>R</kbd> / <kbd>N</kbd> answer, <kbd>1</kbd>–<kbd>5</kbd> confidence, {% if condition == 'ai' %}<kbd>A</kbd> AI suggestion, {% endif %}<kbd>Enter</kbd> next.</li>
+      </ul>
+    </div>
+    <button class="btn primary" id="tutorial-done">Continue to a quick check</button>
+  </section>
+
+  <!-- ========================== Instruction check ========================= -->
+  <section id="screen-check" class="screen" hidden>
+    <h1>Quick check</h1>
+    <form id="check-form" class="box" novalidate>
+      <fieldset>
+        <legend>A headline about the “political climate” in Congress is…</legend>
+        <label class="radio"><input type="radio" name="check" value="relevant"> Relevant</label>
+        <label class="radio"><input type="radio" name="check" value="not_relevant"> Not relevant</label>
+      </fieldset>
+      <button type="submit" class="btn primary" disabled id="check-submit">Submit</button>
+    </form>
+    <div id="check-feedback" class="feedback" hidden>
+      <p id="check-result"></p>
+      <p id="check-rule" class="small"></p>
+      <button class="btn primary" id="check-continue">Continue</button>
+    </div>
+  </section>
+
+  <!-- ============================= Block intro ============================ -->
+  <section id="screen-intro" class="screen" hidden>
+    <p class="eyebrow" id="intro-part"></p>
+    <h1 id="intro-title"></h1>
+    <p class="lead" id="intro-text"></p>
+    <button class="btn primary" id="intro-start">Start</button>
+  </section>
+
+  <!-- ================================ Trial =============================== -->
+  <section id="screen-trial" class="screen" hidden>
+    <div class="progress">
+      <div class="progress-label"><span id="trial-count"></span><span id="trial-part"></span></div>
+      <div class="progress-bar" role="progressbar" aria-valuemin="0" aria-valuemax="12" id="progress-bar"><div id="progress-fill"></div></div>
+    </div>
+
+    <details class="key-defs" id="key-defs">
+      <summary>Key definitions</summary>
+      <ul>
+        <li><span class="tag tag-rel">Relevant</span> main subject is the environment, climate or sustainability (emissions, energy transition, pollution, waste, nature, environmental impact of business or policy).</li>
+        <li><span class="tag tag-not">Not relevant</span> everything else, incl. social topics, governance and pure market news.</li>
+        <li><strong>Weather:</strong> a storm, flood or fire is Relevant only if linked to an environmental cause, impact, pollution or policy.</li>
+        <li><strong>Watch out:</strong> “political climate”, “Miami Heat”, “clean sheet” are Not relevant.</li>
+      </ul>
+    </details>
+
+    <div class="headline-card" id="headline-card">
+      <p class="eyebrow">Headline</p>
+      <p class="headline" id="headline"></p>
+    </div>
+
+    <div class="ai-box" id="ai-box" hidden>
+      <div class="ai-head">
+        <span class="ai-title">AI suggestion</span>
+        <span class="small muted" id="ai-optional">optional</span>
+      </div>
+      <button type="button" class="btn ai-reveal" id="ai-reveal">Show AI suggestion <kbd>A</kbd></button>
+      <p class="small muted" id="ai-loading" hidden>Asking the AI…</p>
+      <div id="ai-content" hidden>
+        <div class="ai-result" id="ai-result">
+          <span class="ai-label" id="ai-label"></span>
+          <span class="meter" id="ai-meter" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="ai-conf"><span id="ai-band"></span> confidence<span id="ai-score"></span></span>
+          <button type="button" class="btn small-btn" id="why-btn" aria-expanded="false">Why?</button>
+        </div>
+        <div id="why-panel" class="why-panel" hidden>
+          <p class="small muted" id="why-loading">Working it out…</p>
+          <div id="why-content" hidden>
+            <p class="small">Highlighted in the headline above. Words the AI weighed:</p>
+            <p class="small"><span class="key key-rel">▲ toward Relevant</span> <span id="why-rel"></span></p>
+            <p class="small"><span class="key key-not">▼ toward Not relevant</span> <span id="why-not"></span></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="answers" role="group" aria-label="Your answer">
+      <button type="button" class="answer-btn" data-answer="1" aria-pressed="false"><span class="check-mark" aria-hidden="true">✓</span> Relevant <kbd>R</kbd></button>
+      <button type="button" class="answer-btn" data-answer="0" aria-pressed="false"><span class="check-mark" aria-hidden="true">✓</span> Not relevant <kbd>N</kbd></button>
+    </div>
+
+    <div class="confidence" role="group" aria-labelledby="conf-label">
+      <p id="conf-label" class="conf-label">How sure are you?</p>
+      <div class="conf-row">
+        {% for i in range(1, 6) %}<button type="button" class="conf-btn" data-conf="{{ i }}" aria-pressed="false">{{ i }}</button>{% endfor %}
+      </div>
+      <div class="conf-ends small muted"><span>Not at all sure</span><span>Very sure</span></div>
+    </div>
+
+    <button class="btn primary wide" id="next-btn" disabled>Next</button>
+
+    <div id="trial-feedback" class="feedback" hidden>
+      <p id="fb-main"></p>
+      <p id="fb-ai" class="small"></p>
+      <button class="btn primary wide" id="fb-continue">Continue <kbd>Enter</kbd></button>
+    </div>
+
+  </section>
+
+  <!-- ============================ Questionnaire =========================== -->
+  <section id="screen-questionnaire" class="screen" hidden>
+    <p class="eyebrow" id="q-part"></p>
+    <h1>A few quick questions</h1>
+    <form id="q-form" novalidate>
+      <div id="q-items"></div>
+      <div id="q-comment-wrap" hidden>
+        <label for="q-comment">Any comments on the AI? (optional)</label>
+        <textarea id="q-comment" rows="3" maxlength="2000"></textarea>
+      </div>
+      <p class="error" id="q-error" role="alert" hidden></p>
+      <button type="submit" class="btn primary wide">Submit</button>
+    </form>
+  </section>
+
+  <!-- ============================== Completed ============================= -->
+  <section id="screen-completed" class="screen" hidden>
+    <h1>Thank you!</h1>
+    <p class="lead">You've finished the study.</p>
+    <div class="box center">
+      <p class="small muted">Your completion code</p>
+      <p class="code" id="completion-code"></p>
+    </div>
+    <form id="feedback-form" class="box">
+      <label for="final-feedback">Anything you'd like to tell us? (optional)</label>
+      <textarea id="final-feedback" rows="3" maxlength="3000"></textarea>
+      <button type="submit" class="btn">Send feedback</button>
+      <span class="small muted" id="feedback-sent" hidden>Thanks, saved.</span>
+    </form>
+
+    <div class="tabs" role="tablist">
+      <button class="tab" role="tab" id="tab-results" aria-selected="true">Results board</button>
+      <button class="tab" role="tab" id="tab-review" aria-selected="false">Your answers</button>
+    </div>
+    <div id="panel-results" class="box"></div>
+    <div id="panel-review" class="box" hidden></div>
+
+    <div class="danger-zone">
+      <h2>Delete my submission</h2>
+      <p class="small">This permanently removes your answers, timings and questionnaire. You won't be able to take the study again with the same uniqname.</p>
+      <button class="btn danger" id="withdraw-btn">Delete my submission</button>
+      <div id="withdraw-confirm" hidden>
+        <p><strong>Are you sure?</strong> This can't be undone.</p>
+        <button class="btn danger" id="withdraw-yes">Yes, delete everything</button>
+        <button class="btn" id="withdraw-no">Cancel</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- =========================== End states =========================== -->
+  <section id="screen-terminated" class="screen" hidden>
+    <h1>Thanks for your time</h1>
+    <p class="lead">This session has ended because an attention check was missed twice.</p>
+    <div class="box">
+      <p>As explained at the start, this version can't be taken again with the same uniqname. Your answers so far are kept for the record.</p>
+      <p class="small muted">If you think this was a mistake, please tell the study organiser.</p>
+    </div>
+  </section>
+
+  <section id="screen-message" class="screen" hidden>
+    <h1 id="message-title"></h1>
+    <p class="lead" id="message-text"></p>
+  </section>
+</main>
+
+<!-- Connection error banner -->
+<div id="net-error" class="net-error" role="alert" hidden>
+  <p>We couldn't reach the server. Your saved answers are safe.</p>
+  <button class="btn primary" id="net-retry">Try again</button>
+</div>
+
+<!-- Shared definitions (cloned into tutorial and trial panel) -->
+<template id="definitions-template">
+  <div class="defs">
+    <p><span class="tag tag-rel">Relevant</span> The headline's <strong>main subject</strong> is the environment, climate or sustainability: emissions, energy transition, pollution, waste and recycling, nature and conservation, or the environmental impact of business or policy.</p>
+    <p><span class="tag tag-not">Not relevant</span> Everything else, including social topics, governance, and pure market news (oil prices, EV stock moves) with no environmental angle.</p>
+    <p><strong>Weather rule:</strong> a flood, storm or fire is <em>Relevant</em> only if the headline links it to an environmental cause, impact, pollution or policy (e.g. wildfire smoke and air quality). A plain weather or incident report is <em>Not relevant</em>.</p>
+    <p><strong>Watch out:</strong> environmental-sounding words used in another sense are <em>Not relevant</em>: “political climate”, “Miami Heat”, “clean sheet”, “carbon fibre bike”.</p>
+  </div>
+</template>
+
+<script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

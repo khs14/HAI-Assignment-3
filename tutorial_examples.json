@@ -1,0 +1,23 @@
+{
+  "status": "Final tutorial examples shown to participants. None come from the study set (prepare_trials.py checks this). Labels follow the label definitions.",
+  "examples": [
+    {"title": "City council approves plan to cut municipal carbon emissions 40% by 2030",
+     "label": 1, "kind": "Clear relevant",
+     "why": "The main subject is cutting emissions."},
+    {"title": "Smartphone maker posts record quarterly profit on strong holiday sales",
+     "label": 0, "kind": "Clear not relevant",
+     "why": "Business news with no environmental angle."},
+    {"title": "Investors cheer improving business climate as interest rates fall",
+     "label": 0, "kind": "Hard negative",
+     "why": "\"Climate\" here means the business mood, not the environment."},
+    {"title": "Miami Heat rally past Celtics in overtime thriller",
+     "label": 0, "kind": "Hard negative",
+     "why": "\"Heat\" is a basketball team."},
+    {"title": "Nor'easter brings heavy snow and flight cancellations to Boston",
+     "label": 0, "kind": "Weather rule: plain weather report",
+     "why": "A storm report with no environmental cause, impact or policy."},
+    {"title": "Wildfire smoke drives New York air quality to unhealthy levels",
+     "label": 1, "kind": "Weather rule: environmental impact",
+     "why": "The headline ties the fire to air pollution."}
+  ]
+}

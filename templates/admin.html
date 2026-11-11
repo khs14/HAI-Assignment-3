@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Study admin</title><link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}"></head>
+<body><main>
+  <h1>Study admin</h1>
+  {% if model_error %}<p class="error">Model failed to load: {{ model_error }}. All predictions are using the precomputed fallback.</p>{% endif %}
+
+  <div class="box">
+    <h2>Sessions</h2>
+    <div class="table-wrap"><table>
+      <tr><th>Version</th><th>Status counts</th></tr>
+      {% for cond, label in condition_text.items() %}
+      <tr><td>{{ label }}</td><td>{% for s, n in (status.get(cond) or {}).items() %}<strong>{{ s }}</strong> {{ n }}{% if not loop.last %} · {% endif %}{% else %}none yet{% endfor %}</td></tr>
+      {% endfor %}
+    </table></div>
+    <p>People who completed <strong>both</strong> versions: <strong>{{ both }}</strong> (the course needs at least 5 per version)</p>
+    <h2>Session duration (consent → finish, completed sessions)</h2>
+    <div class="table-wrap"><table>
+      <tr><th>Version</th><th>Sessions</th><th>Median</th><th>90th pct</th><th>Longest</th><th>Over {{ limit }} min</th></tr>
+      {% for cond, label in condition_text.items() %}{% set d = durations.get(cond) %}
+      <tr><td>{{ label }}</td>
+        {% if d %}<td>{{ d.n }}</td><td>{{ d.median }} min</td><td>{{ d.p90 }} min</td><td>{{ d.max }} min</td>
+        <td>{% if d.over %}<strong class="error">{{ d.over }}</strong>{% else %}0{% endif %}</td>
+        {% else %}<td colspan="5">none yet</td>{% endif %}</tr>
+      {% endfor %}
+    </table></div>
+    <p>AI fallback calls: <strong>{{ fallbacks }}</strong> (should be 0)</p>
+  </div>
+
+  <div class="box">
+    <h2>Downloads (CSV)</h2>
+    <p><a class="btn primary" href="{{ url_for('admin_export', name='analysis') }}">analysis.csv</a>
+       <span class="small muted">one row per real trial</span></p>
+    <p><a class="btn primary" href="{{ url_for('admin_export', name='sessions') }}">sessions.csv</a>
+       <span class="small muted">one row per session (accuracy, time, questionnaire), for paired tests</span></p>
+    <div class="table-wrap"><table>
+      <tr><th>Table</th><th>Rows</th><th></th></tr>
+      {% for t in tables %}
+      <tr><td>{{ t }}</td><td>{{ counts[t] }}</td><td><a href="{{ url_for('admin_export', name=t) }}">download</a></td></tr>
+      {% endfor %}
+    </table></div>
+  </div>
+
+  <form class="box" method="get">
+    <h2>Look up a uniqname</h2>
+    <p class="small muted">Works for anonymous participants too (matches the hashed code).</p>
+    <input name="uniqname" maxlength="8" style="max-width:200px" value="{{ lookup.uniqname if lookup else '' }}">
+    <button class="btn" type="submit">Check</button>
+    {% if lookup %}
+      {% if lookup.attempts %}
+        <ul>{% for a in lookup.attempts %}<li>{{ condition_text[a.condition] }}, attempt {{ a.attempt }}: {{ a.status }}{% if a.code %}, code {{ a.code }}{% endif %}{% if a.completed_at %}, {{ a.completed_at }}{% endif %}</li>{% endfor %}</ul>
+      {% else %}<p>No record for “{{ lookup.uniqname }}”.</p>{% endif %}
+    {% endif %}
+  </form>
+
+  <form method="post" action="{{ url_for('admin_logout') }}"><button class="btn" type="submit">Log out</button></form>
+</main></body></html>

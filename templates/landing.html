@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Headline Relevance Study</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body class="home">
+<header class="topbar">
+  <span class="topbar-title"><span class="hide-xs">Headline </span>Relevance Study</span>
+  <span class="version-badge">CSE 594</span>
+</header>
+
+<main class="home-main">
+  <section class="home-hero">
+    <p class="eyebrow">Human-AI interaction study</p>
+    <h1>Is this headline about environmental sustainability?</h1>
+    <p class="lead">Read short news headlines and decide whether each one is about the environment. We're studying how AI suggestions affect people's judgments.</p>
+  </section>
+
+  <div class="home-cards">
+    <a class="home-card" href="{{ url_for('study_page', cond='baseline') }}" data-cond="baseline">
+      <span class="home-status" data-status hidden></span>
+      <span class="home-kicker">Baseline</span>
+      <span class="home-card-title">Without AI</span>
+      <span class="home-card-text">You decide on your own.</span>
+      <span class="home-meta"><span>About 5 min</span><span>{{ n_trials }} headlines</span></span>
+      <span class="btn primary home-cta" data-cta>Start without AI</span>
+    </a>
+
+    <a class="home-card home-card-ai" href="{{ url_for('study_page', cond='ai') }}" data-cond="ai">
+      <span class="home-status" data-status hidden></span>
+      <span class="home-kicker">AI-assisted</span>
+      <span class="home-card-title">With AI</span>
+      <span class="home-card-text">Ask an AI for a suggestion whenever you want. It shows how confident it is and why.</span>
+      <span class="home-meta"><span>About 7 min</span><span>{{ n_trials }} headlines</span></span>
+      <span class="btn primary home-cta" data-cta>Start with AI</span>
+    </a>
+  </div>
+
+  <p class="home-order"><strong>Do both versions, one at a time</strong>, starting with the one the class spreadsheet gives you. Use the same uniqname for both.</p>
+
+  <ul class="home-facts">
+    <li><span><strong>Voluntary.</strong> No payment, no penalty for not taking part.</span></li>
+    <li><span><strong>Stop any time.</strong> Close the page; you can resume later.</span></li>
+    <li><span><strong>No personal details.</strong> You can stay anonymous.</span></li>
+  </ul>
+</main>
+
+<script>
+  // Show this browser's progress on each version (Not started / In progress / Done).
+  (function () {
+    const LABELS = {
+      consent: null,
+      tutorial: ["In progress", "Continue"], trials: ["In progress", "Continue"],
+      questionnaire: ["In progress", "Continue"],
+      completed: ["Done ✓", "View your results"],
+      terminated: ["Ended", "View"], withdrawn: ["Deleted", "View"],
+    };
+    document.querySelectorAll(".home-card").forEach((card) => {
+      const cond = card.dataset.cond;
+      fetch(`/api/${cond}/state`, { credentials: "same-origin" })
+        .then((r) => r.json())
+        .then((s) => {
+          const l = LABELS[s.stage];
+          if (!l) return;
+          const badge = card.querySelector("[data-status]");
+          badge.textContent = l[0];
+          badge.className = "home-status status-" + s.stage;
+          badge.hidden = false;
+          card.querySelector("[data-cta]").textContent = l[1];
+          if (s.stage === "completed") card.classList.add("is-done");
+        })
+        .catch(() => {});
+    });
+  })();
+</script>
+</body>
+</html>

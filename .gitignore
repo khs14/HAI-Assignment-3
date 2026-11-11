@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+.pytest_cache/
+
+# The study set IS part of the repository (for reproducibility):
+#   study_dataset_submission.csv
+# Everything else that is CSV is participant data or an export: never commit it.
+*.csv
+!study_dataset_submission.csv
+*ground_truth*
+instance/
+*.db
+*.db-journal
+exports/
+backups/
+
+# Secrets
+secrets.json
+.env
+
+# Archives and logs (e.g. the downloaded project zip)
+*.zip
+*.log
+
+# Editor and operating-system files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+desktop.ini

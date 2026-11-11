@@ -1,0 +1,17 @@
+# Runtime requirements for the study app (PythonAnywhere, Python 3.11).
+# numpy / scikit-learn match model_card.json (trained with Python 3.11.5).
+# scipy / joblib were not recorded at training time; these are the releases from
+# the same period as scikit-learn 1.5.0, and scripts/check_model.py confirms
+# they reproduce every study score exactly.
+scikit-learn==1.5.0
+numpy==1.26.4
+scipy==1.13.1
+joblib==1.4.2
+threadpoolctl==3.5.0
+flask==3.0.3
+werkzeug==3.1.9
+jinja2==3.1.6
+markupsafe==3.0.4
+itsdangerous==2.2.0
+click==8.5.1
+blinker==1.9.0
